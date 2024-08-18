@@ -3,7 +3,7 @@ import React from "react";
 function page() {
   return (
     <div className='login flex items-center justify-center bg-[url("https://images.unsplash.com/photo-1654198340681-a2e0fc449f1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMDUzMDJ8MHwxfHNlYXJjaHw0ODN8fGJsYWNrJTIwZ3JhZGllbnQlMjB8ZW58MXx8fHwxNjk5NTQwODM2fDA&ixlib=rb-4.0.3&q=80&w=1080")] h-screen'>
-      <form className="relative bg-white bg-opacity-10 border border-white border-opacity-70 p-10 text-white rounded-xl backdrop-blur-md w-80 md:w-96">
+      <form className="relative bg-white bg-opacity-5 border border-white border-opacity-70 p-10 text-white rounded-xl backdrop-blur-md w-80 md:w-96">
         <h1 className="text-center font-bold text-2xl mb-5">Login</h1>
 
         <div className="space-y-4 mb-4">

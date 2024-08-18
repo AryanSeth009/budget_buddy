@@ -23,7 +23,7 @@ const Page: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className='bg-[#1B1B1B]'>
       Redirecting to login...
     </div>
   );
