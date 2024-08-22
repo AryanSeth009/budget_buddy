@@ -9,7 +9,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="flex min-h-screen ">
+    <div className="flex min-h-screen absolute">
       <div
         className={`fixed top-0 left-0 h-full transition-width duration-300 bg-[#1B1B1B] shadow-lg ${
           isOpen ? "w-200" : "w-[220px]"
