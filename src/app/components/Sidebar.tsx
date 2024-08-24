@@ -1,7 +1,41 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
 const Sidebar = () => {
+  const [username, setUsername] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('No token found');
+          return;
+        }
+
+        const response = await fetch('/api/user', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.username);
+        } else {
+          setError('Failed to fetch user details');
+        }
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+        setError('An error occurred');
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleNav = () => {
@@ -19,7 +53,7 @@ const Sidebar = () => {
         <nav className="flex flex-col mt-2">
          <div className="flex flex-col text-white items-center justify-center p-6 pb-10">
             <img className="rounded-full  h-20  border border-white" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzBXNuO6PezhC18aYH_2cYtS0I7KbxoKYdwA&s" alt="" />
-            <h2 className="font-sans p-4 text-xl" >User Name</h2>
+            <h2 className="font-sans p-4 text-xl" >{username}</h2>
          </div>
           <a
             href="#"

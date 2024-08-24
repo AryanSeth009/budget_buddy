@@ -1,9 +1,42 @@
-import React from "react";
+"use client";
+import React,{useState} from "react";
+import { useRouter } from "next/router";
 
-function page() {
+function Page() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }), // Ensure data is being sent
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Handle successful login, e.g., save JWT token and redirect
+      localStorage.setItem('token', data.token);
+      window.location.href = '/home';
+    } else {
+      // Handle login error
+      console.error('Login error:', data.error);
+    }
+  };
+
+
+
   return (
     <div className='login flex items-center justify-center bg-[url("https://images.unsplash.com/photo-1654198340681-a2e0fc449f1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMDUzMDJ8MHwxfHNlYXJjaHw0ODN8fGJsYWNrJTIwZ3JhZGllbnQlMjB8ZW58MXx8fHwxNjk5NTQwODM2fDA&ixlib=rb-4.0.3&q=80&w=1080")] h-screen'>
-      <form className="relative bg-white bg-opacity-5 border border-white border-opacity-70 p-10 text-white rounded-xl backdrop-blur-md w-80 md:w-96">
+      <form
+        onSubmit={handleSubmit}
+        className="relative bg-white bg-opacity-5 border border-white border-opacity-70 p-10 text-white rounded-xl backdrop-blur-md w-80 md:w-96"
+      >
         <h1 className="text-center font-bold text-2xl mb-5">Login</h1>
 
         <div className="space-y-4 mb-4">
@@ -11,8 +44,11 @@ function page() {
             <input
               type="email"
               placeholder="Email ID"
-              required
+             
+              value={email}
+              onChange={(e)=> setEmail(e.target.value)}
               className="bg-transparent w-full text-white py-3 outline-none placeholder-white"
+              required
             />
             <i className="ri-mail-fill text-xl"></i>
           </div>
@@ -21,6 +57,9 @@ function page() {
             <input
               type="password"
               placeholder="Password"
+             
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="bg-transparent w-full text-white py-3 outline-none placeholder-white"
             />
@@ -60,4 +99,4 @@ function page() {
   );
 }
 
-export default page;
+export default Page;
