@@ -1,5 +1,5 @@
 // models/Expense.ts
-import { Schema, model, Document } from 'mongoose';
+import mongoose, { Schema, model, Document } from 'mongoose';
 
 interface IExpense extends Document {
   subject: string;
@@ -15,6 +15,7 @@ const expenseSchema = new Schema<IExpense>({
   date: { type: Date, required: true },
 });
 
-const Expense = model<IExpense>('Expense', expenseSchema);
+// Check if model already exists, otherwise create it
+const Expense = mongoose.models.Expense || model<IExpense>('Expense', expenseSchema);
 
 export default Expense;

@@ -2,17 +2,47 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/app/components/Sidebar";
 import "@/app/components/Button.css";
+import ExpenseForm from  "@/app/components/ExpenseForm";
 function Page() {
-  
   interface Expense {
     _id: string;
     subject: string;
+
     personName: string;
     amount: number;
     date: string;
   }
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const showForm = () => {
+    setIsFormVisible(true);
+  };
+  const hideForm = () => {
+    setIsFormVisible(false);
+  };
+  const saveExpenseHandler = async (expenseData: any) => {
+    try {
+      const response = await fetch("/api/expense", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(expenseData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add expense");
+      }
+
+      const data = await response.json();
+      console.log("Expense added:", data);
+      hideForm();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -121,18 +151,30 @@ function Page() {
             </div>
           </div>
 
-          <div className="2nd h-auto flex items-start text-white p-4 text-xl  font-semibold justify-center  w-[500px] bg-[#1B1B1B] rounded-md shadow-lg">
+          <div className="2nd h-full flex flex-col  text-white p-4 text-xl font-semibold self-center items-center w-[500px] bg-[#1B1B1B] rounded-md shadow-lg">
             <h2>Recent Expenses</h2>
-            <ul>
-              {expenses.map((expense) => (
-                <li key={expense._id}>
-                  <span>{expense.subject}</span>
-                  <span>{expense.personName}</span>
-                  <span>{new Date(expense.date).toLocaleDateString()}</span>
-                  <span>${expense.amount.toFixed(2)}</span>
+            <div className="w-full flex items-center justify-center">
+        
+              <ul className="flex flex-col space-y-3  pt-4">
+                <li className="flex gap-20   text-sm text-[#A4A4A4]">
+                  <span className="text-sm text-[#A4A4A4]">Subject</span>
+                  <span>Person</span>
+                  <span>Date</span>
+                  <span>Amount</span>
                 </li>
-              ))}
-            </ul>
+               
+                {expenses.map((expense) => (
+                  <li key={expense._id} className="flex font-normal text-[#A4A4A4] gap-20  text-sm">
+                    <span className="mr-2">{expense.subject}</span>
+                    <span className="mr-2">{expense.personName}</span>
+                    <span className="mr-2">
+                      {new Date(expense.date).toLocaleDateString()}
+                    </span>
+                    <span className="">${expense.amount.toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
         <div className="2nd_row ml-24 p-4 text-white text-xl font-semibold h-auto w-[1040px] bg-[#1B1B1B] rounded-md shadow-lg mt-2 mb-2 self-center">
@@ -153,7 +195,10 @@ function Page() {
               </svg>
               + ADD Balance
             </button>
-            <button className="sec_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
+            <button
+              onClick={showForm}
+              className="sec_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -166,6 +211,12 @@ function Page() {
               </svg>
               + New Expense
             </button>
+            {isFormVisible && (
+              <ExpenseForm
+                onSaveExpense={saveExpenseHandler}
+                onCancel={hideForm}
+              />
+            )}
             <button className="thir_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
