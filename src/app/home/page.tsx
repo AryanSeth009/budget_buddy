@@ -2,7 +2,17 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/app/components/Sidebar";
 import "@/app/components/Button.css";
+import { ethers } from 'ethers';
 import ExpenseForm from  "@/app/components/ExpenseForm";
+import { Core } from '@walletconnect/core'
+import { Web3Wallet } from '@walletconnect/web3wallet'
+
+
+declare global {
+  interface Window {
+    ethereum: any;  // Declare ethereum as any, or you can use a more specific type
+  }
+}
 function Page() {
   interface Expense {
     _id: string;
@@ -43,8 +53,56 @@ function Page() {
       console.error("Error:", error);
     }
   };
+  const [account, setAccount] = useState<string | null>(null);
+
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const accounts = await provider.send('eth_requestAccounts', []);
+        setAccount(accounts[0]);
+      } catch (error) {
+        console.error('Failed to connect wallet:', error);
+      }
+    } else {
+      alert('Please install MetaMask!');
+    }
+  };
+  const core = new Core({
+    projectId: process.env.PROJECT_ID
+  })
+  
+  const web3wallet = async () => Web3Wallet.init({
+    core, // <- pass the shared `core` instance
+    metadata: {
+      name: 'Demo app',
+      description: 'Demo Client as Wallet/Peer',
+      url: 'www.walletconnect.com',
+      icons: []
+    }
+  })
 
   useEffect(() => {
+    const initWeb3Wallet = async () => {
+      try {
+        const core = new Core({
+          projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+        });
+  
+        await Web3Wallet.init({
+          core,
+          metadata: {
+            name: 'Demo app',
+            description: 'Demo Client as Wallet/Peer',
+            url: 'www.walletconnect.com',
+            icons: [],
+          },
+        });
+      } catch (error) {
+        console.error("Failed to initialize Web3Wallet:", error);
+      }
+    };
+  
     const fetchExpenses = async () => {
       try {
         const response = await fetch("/api/expense");
@@ -54,11 +112,12 @@ function Page() {
         console.error("Error fetching recent expenses:", error);
       }
     };
-
+  
     fetchExpenses();
+    initWeb3Wallet();
   }, []);
   return (
-    <div className="flex">
+    <div className="flex relative">
       <Sidebar />
       <div className="home_section flex flex-col gap-4 p-10 justify-center bg-black h-screen w-full">
         <div className="1st_row  flex flex-row justify-center gap-6 h-auto w-full rounded-xl">
@@ -212,7 +271,7 @@ function Page() {
               + New Expense
             </button>
             {isFormVisible && (
-              <ExpenseForm
+              <ExpenseForm 
                 onSaveExpense={saveExpenseHandler}
                 onCancel={hideForm}
               />
@@ -231,7 +290,7 @@ function Page() {
               + Create Trip
             </button>
 
-            <button className="for_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
+            {/* <button className="for_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -243,6 +302,20 @@ function Page() {
                 <path d="M20 2C21.6569 2 23 3.34315 23 5V7H21V19C21 20.6569 19.6569 22 18 22H4C2.34315 22 1 20.6569 1 19V17H17V19C17 19.5128 17.386 19.9355 17.8834 19.9933L18 20C18.5128 20 18.9355 19.614 18.9933 19.1166L19 19V15H3V5C3 3.34315 4.34315 2 6 2H20Z"></path>
               </svg>{" "}
               + ADD Receipt
+            </button> */}
+            <button  onClick={connectWallet} className="for_btn px-2 py-1 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                className="border  border-purple-300 rounded-full p-1"
+                fill="rgba(140,108,196,1)"
+              >
+                <path d="M20 2C21.6569 2 23 3.34315 23 5V7H21V19C21 20.6569 19.6569 22 18 22H4C2.34315 22 1 20.6569 1 19V17H17V19C17 19.5128 17.386 19.9355 17.8834 19.9933L18 20C18.5128 20 18.9355 19.614 18.9933 19.1166L19 19V15H3V5C3 3.34315 4.34315 2 6 2H20Z"></path>
+              </svg>{" "}
+             
+              + connect wallet
             </button>
           </div>
         </div>

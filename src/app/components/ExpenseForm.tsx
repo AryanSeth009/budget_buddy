@@ -24,65 +24,69 @@ const page: React.FC<{
   };
 
   return (
-    <div className="flex bg-[#0F0F10] items-center h-screen  w-auto justify-center align-middle self-center pb-10">
+    <div className="flex absolute bg-[#0F0F10] font-sans  items-center h-screen w-screen  bg-opacity-95 ml-96    justify-center align-middle self-center pb-10">
       <form
         onSubmit={submitHandler}
-        className="bg-white bg-opacity-5 flex-row items-center align-middle w-[400px] h-[550px]  text-white rounded-md border-1 p-8"
+        className="bg-white mt-20 bg-opacity-5 flex-row mr-32 mb-20 items-center align-middle w-[450px] h-auto  text-white rounded-md border-1 p-8"
       >
         <h2 className="text-center text-3xl">Add Transaction Detail</h2>
-        <div className="flex flex-col  w-auto text-[#E7E7E4 gap-6 pt-12">
-          <div className="text-[#E7E7E4] flex flex-col gap-4">
+        <div className="flex flex-col font-light w-auto text-[#E7E7E4 gap-6 pt-12">
+          <div className="text-[#E7E7E4]  flex flex-col gap-2">
             <label >Subject</label>
             <input
               type="text" placeholder="Enter Subject"
-              className="rounded-lg p-1"
+              className="rounded-lg p-1 bg-[#0F0F10] pl-4 text-[#E7E7E4] border border-1  bg-opacity-90"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
             />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2  text-[#E7E7E4]">
             <label>Person Name</label>
             <input
               type="text" placeholder="Enter Person Name"
-              className="rounded-lg p-1"
+              className="rounded-lg p-1 text-[#E7E7E4] pl-4 border bg-[#0F0F10]"
               value={personName}
               onChange={(e) => setPersonName(e.target.value)}
               required
             />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             <label>Amount</label>
             <input 
               type="number" placeholder="Enter Amount"
-              className="rounded-lg p-1 text-gray-400"
+              className="rounded-lg p-1 pl-4 bg-[#0F0F10] border text-[#E7E7E4]"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
               required
             />
           </div>
-          <div className="flex flex-col ">
+          <div className="flex flex-col gap-2">
             <label>Date</label>
             <input 
               type="date" placeholder="Enter Date"
-              className="rounded-lg p-1 text-gray-400"
+              className="rounded-lg p-1 pl-4 bg-[#0F0F10] border text-[#E7E7E4]"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
           </div>
         </div>
-        <div className="text-end pt-6">
+        <div className="flex flex-row space-x-28 text-end pt-6 ">
+        <button type="button" className="flex  mr-0 bg-[#E7E7E4]  rounded-md self-start" onClick={onCancel}>
+          Cancel
+        </button>
           <button
             type="submit"
-            className="text-black rounded-md p-2  w-auto text-center  bg-[#E7E7E4]"
+            className="text-black   rounded-md p-2 pb  w-auto text-center  bg-[#E7E7E4]"
           >
             Add Expense
           </button>
+         
         </div>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+       
+      
+       
       </form>
     </div>
    

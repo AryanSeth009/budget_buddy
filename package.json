@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@walletconnect/core": "^2.15.2",
+    "@walletconnect/utils": "^2.15.2",
+    "@walletconnect/web3wallet": "^1.14.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
+    "ethers": "^5.7.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.3",
     "next": "14.2.5",
