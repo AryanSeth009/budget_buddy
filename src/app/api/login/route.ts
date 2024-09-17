@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import User from '../../models/User'; // Adjust path as needed
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Add JWT secret to your .env.local
+const JWT_SECRET = process.env.JWT_SECRET || 'eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcyNDQ3OTk5OSwiaWF0IjoxNzI0NDc5OTk5fQ'; // Add JWT secret to your .env.local
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
@@ -39,11 +39,7 @@ export async function POST(req: Request) {
     }
 
     // Generate a JWT token
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
-    );
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
 
     return NextResponse.json({ success: true, token });
   } catch (error) {

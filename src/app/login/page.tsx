@@ -6,29 +6,31 @@ function Page() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // Example of storing token on successful login
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }), // Ensure data is being sent
-    });
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }), // Ensure data is being sent
+  });
 
-    const data = await response.json();
+  const data = await response.json();
 
-    if (response.ok) {
-      // Handle successful login, e.g., save JWT token and redirect
-      localStorage.setItem('token', data.token);
-      window.location.href = '/home';
-    } else {
-      // Handle login error
-      console.error('Login error:', data.error);
-    }
-  };
+  if (response.ok) {
+    // Store JWT token securely
+    localStorage.setItem('token', data.token);
+    window.location.href = '/home';
+  } else {
+    // Handle login error
+    console.error('Login error:', data.error);
+  }
+};
 
+  
 
 
   return (

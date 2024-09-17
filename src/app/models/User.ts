@@ -5,6 +5,7 @@ interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  balance:number
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema({
@@ -22,6 +23,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: String,
     required: true,
   },
+  balance:{
+    type:Number,
+    required:true,
+  }
 });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', userSchema,'budget_buddy');

@@ -2,120 +2,193 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/app/components/Sidebar";
 import "@/app/components/Button.css";
-import { ethers } from 'ethers';
-import ExpenseForm from  "@/app/components/ExpenseForm";
-import { Core } from '@walletconnect/core'
-import { Web3Wallet } from '@walletconnect/web3wallet'
-
-
+import { ethers } from "ethers";
+import ExpenseForm from "@/app/components/ExpenseForm";
+import TripForm from "@/app/components/TripForm";
 declare global {
   interface Window {
-    ethereum: any;  // Declare ethereum as any, or you can use a more specific type
+    ethereum: any; // Declare ethereum as any, or you can use a more specific type
   }
 }
+
+const EtherscanApiKey = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
+
 function Page() {
-  interface Expense {
+  type Expense = {
     _id: string;
     subject: string;
-
     personName: string;
     amount: number;
     date: string;
-  }
+  };
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isTripFormVisible, setTripFormVisible] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null); // Add userId state
+
+  type ExpensePayload = {
+    expenseData: any;
+    userId: string;
+  };
 
   const showForm = () => {
     setIsFormVisible(true);
   };
+
+  const showTripForm = () => {
+    setTripFormVisible(true);
+  };
+
   const hideForm = () => {
     setIsFormVisible(false);
   };
-  const saveExpenseHandler = async (expenseData: any) => {
+
+  const hideTripForm = () => {
+    setTripFormVisible(false);
+  };
+
+  const saveExpenseHandler = async (expenseData: {
+    subject: string;
+    personName: string;
+    amount: number;
+    date: Date;
+    userId: string;
+  }) => {
     try {
-      const response = await fetch("/api/expense", {
+      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+  
+      const { userId, ...data } = expenseData;
+      const response = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Add the token to the headers
+        },
+        body: JSON.stringify({ ...data, userId }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to add expense');
+      }
+  
+      const responseData = await response.json();
+      console.log('Expense added:', responseData);
+      hideForm();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  
+
+  const saveTripHandler = async (tripData: any) => {
+    try {
+      if (!userId) {
+        throw new Error("User ID is not available");
+      }
+      const fullPayload = {
+        ...tripData,
+        userId,
+      };
+      const response = await fetch("/api/trip", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(expenseData),
+        body: JSON.stringify(fullPayload),
       });
-
       if (!response.ok) {
-        throw new Error("Failed to add expense");
+        throw new Error("Failed to add trip");
       }
-
       const data = await response.json();
-      console.log("Expense added:", data);
-      hideForm();
+      console.log("Trip added:", data);
+      hideTripForm();
     } catch (error) {
       console.error("Error:", error);
     }
   };
+
   const [account, setAccount] = useState<string | null>(null);
 
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const accounts = await provider.send('eth_requestAccounts', []);
+        const accounts = await provider.send("eth_requestAccounts", []);
         setAccount(accounts[0]);
+
+        // Assuming userId is derived from the account address or similar
+        setUserId(accounts[0]); // Or fetch the user ID from your backend if applicable
       } catch (error) {
-        console.error('Failed to connect wallet:', error);
+        console.error("Failed to connect wallet:", error);
       }
     } else {
-      alert('Please install MetaMask!');
+      alert("Please install MetaMask!");
     }
   };
-  const core = new Core({
-    projectId: process.env.PROJECT_ID
-  })
-  
-  const web3wallet = async () => Web3Wallet.init({
-    core, // <- pass the shared `core` instance
-    metadata: {
-      name: 'Demo app',
-      description: 'Demo Client as Wallet/Peer',
-      url: 'www.walletconnect.com',
-      icons: []
+
+  const fetchMetaMaskTransactions = async () => {
+    if (!account) return;
+
+    try {
+      const response = await fetch(
+        `https://api.etherscan.io/api?module=account&action=txlist&address=${account}&startblock=0&endblock=99999999&sort=asc&apikey=${EtherscanApiKey}`
+      );
+
+      const textResponse = await response.text();
+      console.log("Raw Response:", textResponse);
+
+      const data = JSON.parse(textResponse);
+
+      if (data.result) {
+        const metaMaskExpenses = data.result.map((tx: any) => ({
+          _id: tx.hash,
+          subject: "MetaMask Transaction",
+          personName: account,
+          amount: parseFloat(ethers.utils.formatEther(tx.value)),
+          date: new Date(tx.timeStamp * 1000).toISOString(),
+        }));
+
+        setExpenses((prevExpenses) => [...prevExpenses, ...metaMaskExpenses]);
+      }
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
     }
-  })
+  };
 
   useEffect(() => {
-    const initWeb3Wallet = async () => {
-      try {
-        const core = new Core({
-          projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-        });
+    if (userId) {
+      fetchMetaMaskTransactions();
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    const userId = sessionStorage.getItem('userId'); // or localStorage, or from your session
+    console.log('Retrieved userId:', userId); // Log retrieved userId
   
-        await Web3Wallet.init({
-          core,
-          metadata: {
-            name: 'Demo app',
-            description: 'Demo Client as Wallet/Peer',
-            url: 'www.walletconnect.com',
-            icons: [],
-          },
-        });
-      } catch (error) {
-        console.error("Failed to initialize Web3Wallet:", error);
-      }
-    };
+    if (!userId) {
+      console.error("User ID is missing");
+      return;
+    }
   
-    const fetchExpenses = async () => {
-      try {
-        const response = await fetch("/api/expense");
-        const data = await response.json();
-        setExpenses(data);
-      } catch (error) {
-        console.error("Error fetching recent expenses:", error);
-      }
-    };
-  
-    fetchExpenses();
-    initWeb3Wallet();
+    fetch(`/api/expenses?userId=${userId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setExpenses(data);
+        } else {
+          console.error("Fetched data is not an array");
+        }
+      })
+      .catch((error) => console.error("Error fetching expenses:", error));
   }, []);
+  
+
+ 
   return (
     <div className="flex relative">
       <Sidebar />
@@ -210,23 +283,28 @@ function Page() {
             </div>
           </div>
 
-          <div className="2nd h-full flex flex-col  text-white p-4 text-xl font-semibold self-center items-center w-[500px] bg-[#1B1B1B] rounded-md shadow-lg">
+          <div className="2nd h-full flex flex-col text-white p-4 text-xl font-semibold self-center items-center w-[500px] bg-[#1B1B1B] rounded-md shadow-lg">
             <h2>Recent Expenses</h2>
             <div className="w-full flex items-center justify-center">
-        
-              <ul className="flex flex-col space-y-3  pt-4">
-                <li className="flex gap-20   text-sm text-[#A4A4A4]">
+              <ul className="flex flex-col space-y-3 pt-4">
+                <li className="flex gap-20 text-sm text-[#A4A4A4]">
                   <span className="text-sm text-[#A4A4A4]">Subject</span>
                   <span>Person</span>
                   <span>Date</span>
                   <span>Amount</span>
                 </li>
-               
-                {expenses.map((expense) => (
-                  <li key={expense._id} className="flex font-normal text-[#A4A4A4] gap-20  text-sm">
-                    <span className="mr-2">{expense.subject}</span>
-                    <span className="mr-2">{expense.personName}</span>
-                    <span className="mr-2">
+
+                {/* Mapping through expenses (including MetaMask transactions) */}
+                {expenses.slice(0, 5).map((expense) => (
+                  <li
+                    key={expense._id}
+                    className="flex font-normal text-[#A4A4A4] gap-20 text-sm"
+                  >
+                    <span className="mr-2 text-[14px]">{expense.subject}</span>
+                    <span className="mr-2 text-[10px]">
+                      {expense.personName}
+                    </span>
+                    <span className="mr-2 text-[14px]">
                       {new Date(expense.date).toLocaleDateString()}
                     </span>
                     <span className="">${expense.amount.toFixed(2)}</span>
@@ -271,12 +349,16 @@ function Page() {
               + New Expense
             </button>
             {isFormVisible && (
-              <ExpenseForm 
+              <ExpenseForm
                 onSaveExpense={saveExpenseHandler}
                 onCancel={hideForm}
+                userId={account || ""}
               />
             )}
-            <button className="thir_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
+            <button
+              onClick={showTripForm}
+              className="thir_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -289,6 +371,9 @@ function Page() {
               </svg>
               + Create Trip
             </button>
+            {isTripFormVisible && (
+              <TripForm onSaveTrip={saveTripHandler} onCancel={hideTripForm} />
+            )}
 
             {/* <button className="for_btn px-4 py-2 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
               <svg
@@ -303,7 +388,10 @@ function Page() {
               </svg>{" "}
               + ADD Receipt
             </button> */}
-            <button  onClick={connectWallet} className="for_btn px-2 py-1 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md">
+            <button
+              onClick={connectWallet}
+              className="for_btn px-2 py-1 flex gap-4 bg-[#373A40] text-white rounded-md shadow-md"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -314,8 +402,7 @@ function Page() {
               >
                 <path d="M20 2C21.6569 2 23 3.34315 23 5V7H21V19C21 20.6569 19.6569 22 18 22H4C2.34315 22 1 20.6569 1 19V17H17V19C17 19.5128 17.386 19.9355 17.8834 19.9933L18 20C18.5128 20 18.9355 19.614 18.9933 19.1166L19 19V15H3V5C3 3.34315 4.34315 2 6 2H20Z"></path>
               </svg>{" "}
-             
-              + connect wallet
+              {account ? <p>Connected Wallet</p> : <p>Connect Wallet</p>}
             </button>
           </div>
         </div>

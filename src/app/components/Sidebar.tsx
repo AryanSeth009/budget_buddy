@@ -17,9 +17,10 @@ const Sidebar = () => {
         const response = await fetch('/api/user', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         });
+        
 
         if (response.ok) {
           const data = await response.json();
