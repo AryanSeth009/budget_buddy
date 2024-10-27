@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOi
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
   await mongoose.connect(MONGODB_URI, {
-   
+    
   });
 };
 

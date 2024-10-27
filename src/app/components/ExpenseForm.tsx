@@ -13,6 +13,8 @@ const ExpenseForm: React.FC<{
 
   const submitHandler = (event: React.FormEvent) => {
     event.preventDefault();
+    const userId = sessionStorage.getItem('userId');
+    const token = sessionStorage.getItem('token'); 
 
     if (!userId) {
       console.error("User ID is not available");
@@ -31,7 +33,7 @@ const ExpenseForm: React.FC<{
   };
 
   return (
-    <div className="flex absolute bg-[#0F0F10] font-sans items-center h-fit w-screen bg-opacity-95 ml-[22.5rem] justify-center align-middle self-center pb-72">
+    <div className="flex absolute bg-[#0F0F10] font-sans items-center h-fit w-screen bg-opacity-95 ml-[22.5rem] justify-center align-middle self-center pb-32">
       <form
         onSubmit={submitHandler}
         className="bg-white mt-20 bg-opacity-5 flex-row mr-32 mb-20 items-center align-middle w-[450px] h-auto text-white rounded-md border-1 p-8"

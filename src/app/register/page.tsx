@@ -7,29 +7,39 @@ const RegisterPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error , setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(''); // Reset any existing error
 
-    const response = await fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, email, password }),
-    });
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    const data = await response.json();
+      if (!response.ok) {
+        // Check if response is okay before parsing
+        throw new Error(`Failed to register: ${response.status}`);
+      }
 
-    if (data.success) {
-      // Handle successful registration (e.g., redirect to login page)
-      window.location.href = '/login';
-    } else {
-      // Handle registration error
-      console.error(data.error);
+      const data = await response.json();
+
+      if (data.success) {
+        // Redirect on success
+        window.location.href = '/login';
+      } else {
+        setError(data.error || 'Registration failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred during registration. Please try again.');
     }
   };
-
   return (
     <div className='login flex items-center justify-center bg-[url("https://images.unsplash.com/photo-1654198340681-a2e0fc449f1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMDUzMDJ8MHwxfHNlYXJjaHw0ODN8fGJsYWNrJTIwZ3JhZGllbnQlMjB8ZW58MXx8fHwxNjk5NTQwODM2fDA&ixlib=rb-4.0.3&q=80&w=1080")] h-screen'>
       <form

@@ -4,40 +4,61 @@ import React, { useState } from "react";
 const TripForm: React.FC<{
   onSaveTrip: (TripData: any) => void;
   onCancel: () => void;
-}> = ({ onSaveTrip, onCancel }) => {
+  userId: string | null;
+}> = ({ onSaveTrip, onCancel, userId }) => {
   const [TripName, setTripName] = useState<string>("");
   const [Amount, setAmount] = useState<number | string>(0);
   const [Destination, setDestination] = useState<string>("");
   const [StartDate, setStartDate] = useState<string>("");
   const [EndDate, setEndDate] = useState<string>("");
   const [method, setMethod] = useState<string>("");
-  const [currency, setCurrency] = useState<string>("");
   const [Note, setNote] = useState<string>("");
+  const [error, setError] = useState<string | null>(null); // For error messages
 
-  const submitHandler = (event: React.FormEvent) => {
+  const submitHandler = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    // Ensure the userId is being passed correctly from props
+    if (!userId) {
+      console.error("User ID is not available");
+      return;
+    }
 
     const TripData = {
       TripName,
-      Amount: Number(Amount), // Ensure amount is a number
+      Amount: Number(Amount),
       Destination,
-      StartDate: new Date(StartDate), // Ensure date is a Date object
-      EndDate: new Date(EndDate),
-      method,
-      currency,
+      StartDate,
+      EndDate,
       Note,
+      userId,
     };
 
-    onSaveTrip(TripData);
+    try {
+      await onSaveTrip(TripData); // Call the save handler
+      // Reset form fields after successful submission
+      setTripName("");
+      setAmount(0);
+      setDestination("");
+      setStartDate("");
+      setEndDate("");
+      setMethod("");
+      setNote("");
+      setError(null); // Clear any previous errors
+    } catch (err) {
+      setError("Failed to save trip. Please try again.");
+      console.error("Error saving trip:", err);
+    }
   };
 
   return (
-    <div className="flex absolute bg-[#0F0F10] font-sans  items-center h-fit w-screen  bg-opacity-95 ml-[22.5rem]    justify-center align-middle self-center pb-44">
+    <div className="flex absolute bg-[#0F0F10] font-sans items-center h-fit w-screen bg-opacity-95 ml-[22.5rem] justify-center align-middle self-center pb-44">
       <form
         onSubmit={submitHandler}
-        className="bg-white mt-20 bg-opacity-5 flex flex-col w-auto  p-8 text-white rounded-md"
+        className="bg-white mt-20 bg-opacity-5 flex flex-col w-auto p-8 text-white rounded-md"
       >
         <h2 className="text-center text-3xl">Add Trip Expense</h2>
+        {error && <p className="text-red-500 text-center">{error}</p>} {/* Display error message */}
         <div className="container font-light flex flex-row gap-">
           <div className="1st_col flex gap-10">
             <div className="flex flex-col gap-4 pt-6">
@@ -65,7 +86,7 @@ const TripForm: React.FC<{
                 />
               </div>
 
-              <div className="flex flex-col gap-2 ">
+              <div className="flex flex-col gap-2">
                 <label>Amount</label>
                 <input
                   type="number"
@@ -90,14 +111,14 @@ const TripForm: React.FC<{
               <div className="flex pt-5 justify-start gap-2">
                 <button
                   type="button"
-                  className="bg-[#E7E7E4] text-black rounded-md p-46"
+                  className="bg-[#E7E7E4] text-black rounded-md p-2"
                   onClick={onCancel}
                 >
                   Cancel
                 </button>
               </div>
             </div>
-            <div className="2nd_col flex flex-col  gap-4 ">
+            <div className="2nd_col flex flex-col gap-4 ">
               <div className="flex flex-col pt-5 gap-2">
                 <label>Start Date</label>
                 <input
@@ -121,18 +142,6 @@ const TripForm: React.FC<{
               </div>
 
               <div className="flex flex-col gap-2">
-                <label>Currency</label>
-                <input
-                  type="text"
-                  placeholder="Enter Currency"
-                  className="rounded-lg p-1 bg-[#0F0F10] pl-4 text-[#E7E7E4] border"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
                 <label>Note</label>
                 <textarea
                   placeholder="Additional Notes"
@@ -141,10 +150,10 @@ const TripForm: React.FC<{
                   onChange={(e) => setNote(e.target.value)}
                 />
               </div>
-              <div className="flex justify-end   gap-2">
+              <div className="flex justify-end gap-2">
                 <button
                   type="submit"
-                  className="bg-[#E7E7E4] text-black rounded-md p-46"
+                  className="bg-[#E7E7E4] text-black rounded-md p-2"
                 >
                   Add Trip
                 </button>

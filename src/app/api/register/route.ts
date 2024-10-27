@@ -19,36 +19,36 @@ export async function POST(req: Request) {
   try {
     await connectDB();
 
+    // Parse request body
     const { username, email, password } = await req.json();
 
+    // Debugging log
+    console.log('Request body:', { username, email, password });
+
     // Validate input
-    if (!username || !email || !password) {
+     // Validate input
+     if (!username || !email || !password) {
       return NextResponse.json({ error: 'Username, email, and password are required' }, { status: 400 });
     }
 
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
-    }
+    // Check if the user already exists (pseudo code for database operation)
+    
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Register the user (pseudo code for database operation)
+    const newUser = await createUser({ username, email, password });
 
-    // Create and save the new user
-    const newUser = new User({ username, email, password: hashedPassword });
-    await newUser.save();
-
-    // Generate a JWT token
-    const token = jwt.sign(
-      { id: newUser._id, email: newUser.email },
-      JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
-    );
-
-    return NextResponse.json({ success: true, data: newUser, token }, { status: 201 });
+    // Respond with success message
+    return NextResponse.json({ success: true, message: 'User registered successfully' });
+    
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 });
   }
+}
+async function checkIfUserExists(email: string) {
+  // Code to check if the user already exists in the database
+}
+
+async function createUser(userData: { username: string; email: string; password: string }) {
+  // Code to create a new user in the database
 }

@@ -1,40 +1,43 @@
 "use client";
-import React,{useState} from "react";
-import { useRouter } from "next/router";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function Page() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter(); // Use Next.js router for navigation
 
-  // Example of storing token on successful login
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const response = await fetch('/api/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }), // Ensure data is being sent
-  });
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (response.ok) {
-    // Store JWT token securely
-    localStorage.setItem('token', data.token);
-    window.location.href = '/home';
-  } else {
-    // Handle login error
-    console.error('Login error:', data.error);
-  }
-};
+    if (response.ok) {
+      // Store both token and userId in sessionStorage
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('userId', data.userId);
 
+      // Navigate to home page after successful login
+      router.push('/home');
+    } else {
+      // Handle login error
+      console.error('Login error:', data.error);
+      alert('Login failed. Please check your credentials.');
+    }
+  };
   
 
 
   return (
-    <div className='login flex items-center justify-center bg-[url("https://images.unsplash.com/photo-1654198340681-a2e0fc449f1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMDUzMDJ8MHwxfHNlYXJjaHw0ODN8fGJsYWNrJTIwZ3JhZGllbnQlMjB8ZW58MXx8fHwxNjk5NTQwODM2fDA&ixlib=rb-4.0.3&q=80&w=1080")] h-screen'>
+    <div className='login flex items-center justify-center  h-screen'>
       <form
         onSubmit={handleSubmit}
         className="relative bg-white bg-opacity-5 border border-white border-opacity-70 p-10 text-white rounded-xl backdrop-blur-md w-80 md:w-96"
