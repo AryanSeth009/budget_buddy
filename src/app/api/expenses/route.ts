@@ -7,6 +7,7 @@ import mongoose  from  'mongoose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
+
 // Middleware to verify JWT and extract userId
 const verifyJWT = (req: Request): string => {
   const authHeader = req.headers.get('Authorization');
